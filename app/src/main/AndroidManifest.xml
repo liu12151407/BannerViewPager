@@ -17,6 +17,11 @@
             android:name="com.example.zhpan.banner.activity.WelcomeActivity"
             android:exported="true"
             android:theme="@style/FullScreenTheme">
+
+        </activity>
+        <activity
+            android:name="com.example.zhpan.banner.activity.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
@@ -24,7 +29,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.zhpan.banner.activity.MainActivity" />
         <activity android:name="com.example.zhpan.banner.activity.WebViewActivity" />
     </application>
 

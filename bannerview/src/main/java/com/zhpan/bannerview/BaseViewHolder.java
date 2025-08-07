@@ -43,89 +43,89 @@ import com.zhpan.bannerview.annotation.Visibility;
 @SuppressWarnings("unused")
 public class BaseViewHolder<T> extends RecyclerView.ViewHolder {
 
-  private final SparseArray<View> mViews = new SparseArray<>();
+    private final SparseArray<View> mViews = new SparseArray<>();
 
-  public BaseViewHolder(@NonNull View itemView) {
-    super(itemView);
-  }
-
-  /**
-   * @deprecated bind data in adapter please.
-   */
-  @Deprecated
-  public void bindData(T data, int position, int pageSize) {
-  }
-
-  @SuppressWarnings("unchecked")
-  public <V extends View> V findViewById(int viewId) {
-    View view = mViews.get(viewId);
-    if (view == null) {
-      view = itemView.findViewById(viewId);
-      mViews.put(viewId, view);
+    public BaseViewHolder(@NonNull View itemView) {
+        super(itemView);
     }
-    return (V) view;
-  }
 
-  public void setText(int viewId, CharSequence text) {
-    View view = findViewById(viewId);
-    if (view instanceof TextView) {
-      ((TextView) view).setText(text);
+    /**
+     * @deprecated bind data in adapter please.
+     */
+    @Deprecated
+    public void bindData(T data, int position, int pageSize) {
     }
-  }
 
-  public void setText(int viewId, @StringRes int textId) {
-    View view = findViewById(viewId);
-    if (view instanceof TextView) {
-      ((TextView) view).setText(textId);
+    @SuppressWarnings("unchecked")
+    public <V extends View> V findViewById(int viewId) {
+        View view = mViews.get(viewId);
+        if (view == null) {
+            view = itemView.findViewById(viewId);
+            mViews.put(viewId, view);
+        }
+        return (V) view;
     }
-  }
 
-  public void setTextColor(int viewId, @ColorInt int colorId) {
-    View view = findViewById(viewId);
-    if (view instanceof TextView) {
-      ((TextView) view).setTextColor(colorId);
+    public void setText(int viewId, CharSequence text) {
+        View view = findViewById(viewId);
+        if (view instanceof TextView) {
+            ((TextView) view).setText(text);
+        }
     }
-  }
 
-  public void setTextColorRes(@IdRes int viewId, @ColorRes int colorRes) {
-    View view = findViewById(viewId);
-    if (view instanceof TextView) {
-      ((TextView) view).setTextColor(ContextCompat.getColor(itemView.getContext(), colorRes));
+    public void setText(int viewId, @StringRes int textId) {
+        View view = findViewById(viewId);
+        if (view instanceof TextView) {
+            ((TextView) view).setText(textId);
+        }
     }
-  }
 
-  public void setOnClickListener(int viewId, View.OnClickListener clickListener) {
-    findViewById(viewId).setOnClickListener(clickListener);
-  }
-
-  public void setBackgroundResource(int viewId, @DrawableRes int resId) {
-    findViewById(viewId).setBackgroundResource(resId);
-  }
-
-  public void setBackgroundColor(int viewId, @ColorInt int colorId) {
-    findViewById(viewId).setBackgroundColor(colorId);
-  }
-
-  public void setImageResource(@IdRes int viewId, @DrawableRes int resId) {
-    View view = findViewById(viewId);
-    if (view instanceof ImageView) {
-      ((ImageView) view).setImageResource(resId);
+    public void setTextColor(int viewId, @ColorInt int colorId) {
+        View view = findViewById(viewId);
+        if (view instanceof TextView) {
+            ((TextView) view).setTextColor(colorId);
+        }
     }
-  }
 
-  public void setImageDrawable(@IdRes int viewId, Drawable drawable) {
-    View view = findViewById(viewId);
-    if (view instanceof ImageView) {
-      ((ImageView) view).setImageDrawable(drawable);
+    public void setTextColorRes(@IdRes int viewId, @ColorRes int colorRes) {
+        View view = findViewById(viewId);
+        if (view instanceof TextView) {
+            ((TextView) view).setTextColor(ContextCompat.getColor(itemView.getContext(), colorRes));
+        }
     }
-  }
 
-  public void setImageBitmap(@IdRes int viewId, Bitmap bitmap) {
-    ImageView view = findViewById(viewId);
-    view.setImageBitmap(bitmap);
-  }
+    public void setOnClickListener(int viewId, View.OnClickListener clickListener) {
+        findViewById(viewId).setOnClickListener(clickListener);
+    }
 
-  public void setVisibility(@IdRes int resId, @Visibility int visibility) {
-    findViewById(resId).setVisibility(visibility);
-  }
+    public void setBackgroundResource(int viewId, @DrawableRes int resId) {
+        findViewById(viewId).setBackgroundResource(resId);
+    }
+
+    public void setBackgroundColor(int viewId, @ColorInt int colorId) {
+        findViewById(viewId).setBackgroundColor(colorId);
+    }
+
+    public void setImageResource(@IdRes int viewId, @DrawableRes int resId) {
+        View view = findViewById(viewId);
+        if (view instanceof ImageView) {
+            ((ImageView) view).setImageResource(resId);
+        }
+    }
+
+    public void setImageDrawable(@IdRes int viewId, Drawable drawable) {
+        View view = findViewById(viewId);
+        if (view instanceof ImageView) {
+            ((ImageView) view).setImageDrawable(drawable);
+        }
+    }
+
+    public void setImageBitmap(@IdRes int viewId, Bitmap bitmap) {
+        ImageView view = findViewById(viewId);
+        view.setImageBitmap(bitmap);
+    }
+
+    public void setVisibility(@IdRes int resId, @Visibility int visibility) {
+        findViewById(resId).setVisibility(visibility);
+    }
 }

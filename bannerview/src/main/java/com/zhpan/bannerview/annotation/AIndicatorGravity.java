@@ -33,7 +33,7 @@ import static com.zhpan.bannerview.constants.IndicatorGravity.START;
  *   Description:指示器显示位置
  * </pre>
  */
-@IntDef({ CENTER, START, END })
+@IntDef({CENTER, START, END})
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.PARAMETER)
 public @interface AIndicatorGravity {
