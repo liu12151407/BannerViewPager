@@ -73,32 +73,47 @@ import static com.zhpan.bannerview.utils.BannerUtils.getOriginalPosition;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class BannerViewPager<T> extends RelativeLayout implements LifecycleObserver {
 
+    // 当前页面位置
     private int currentPosition;
 
+    // 是否使用自定义指示器
     private boolean isCustomIndicator;
 
+    // 是否正在循环播放
     private boolean isLooping;
 
+    // 指示器视图
     private IIndicator mIndicatorView;
 
+    // 指示器布局容器
     private RelativeLayout mIndicatorLayout;
 
+    // ViewPager2实例，用于显示轮播内容
     private ViewPager2 mViewPager;
 
+    // Banner管理器，用于管理Banner的各种配置和选项
     private BannerManager mBannerManager;
 
+    // 主线程Handler，用于处理轮播相关的消息
     private final Handler mHandler = new Handler(Looper.getMainLooper());
 
+    // Banner适配器，用于提供轮播数据
     private BaseBannerAdapter<T> mBannerPagerAdapter;
 
+    // 页面变化回调接口
     private ViewPager2.OnPageChangeCallback onPageChangeCallback;
 
+    // 轮播任务Runnable
     private final Runnable mRunnable = this::handlePosition;
 
+    // 圆角裁剪相关参数
     private RectF mRadiusRectF;
     private Path mRadiusPath;
 
+    // 触摸事件起始坐标
     private int startX, startY;
+
+    // 生命周期注册器
     private Lifecycle lifecycleRegistry;
 
     private final ViewPager2.OnPageChangeCallback mOnPageChangeCallback = new ViewPager2.OnPageChangeCallback() {
@@ -163,6 +178,15 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
     }
 
+    /**
+     * 分发触摸事件
+     * 在触摸事件发生时控制轮播的暂停和恢复：
+     * 1. ACTION_DOWN事件：暂停轮播
+     * 2. ACTION_UP/ACTION_CANCEL/ACTION_OUTSIDE事件：恢复轮播
+     *
+     * @param ev 触摸事件
+     * @return 是否消费该事件
+     */
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
@@ -182,6 +206,16 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         return super.dispatchTouchEvent(ev);
     }
 
+    /**
+     * 拦截触摸事件
+     * 处理BannerViewPager的触摸事件拦截逻辑：
+     * 1. 如果ViewPager的用户输入被禁用或数据项小于等于1，则不拦截事件
+     * 2. ACTION_DOWN事件：记录起始坐标并根据设置决定是否禁止父View拦截事件
+     * 3. ACTION_MOVE事件：根据滑动方向和距离判断是否需要拦截事件
+     *
+     * @param ev 触摸事件
+     * @return 是否拦截该事件
+     */
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         boolean doNotNeedIntercept = !mViewPager.isUserInputEnabled() || mBannerPagerAdapter != null && mBannerPagerAdapter.getData().size() <= 1;
@@ -259,6 +293,12 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
     }
 
+    /**
+     * 页面滚动状态改变时的回调处理
+     * 当页面滚动状态发生变化时，通知注册的页面变化回调接口
+     *
+     * @param state 新的滚动状态
+     */
     private void pageScrollStateChanged(int state) {
 //        if (mIndicatorView != null) {
 //            mIndicatorView.onPageScrollStateChanged(state);
@@ -268,6 +308,15 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
     }
 
+    /**
+     * 页面选中时的回调处理
+     * 当页面被选中时执行以下操作：
+     * 1. 计算真实的页面位置
+     * 2. 如果需要重置当前项（循环模式下到达边界时），则重置当前项
+     * 3. 通知注册的页面变化回调接口
+     *
+     * @param position 当前选中的页面位置
+     */
     private void pageSelected(int position) {
         int size = mBannerPagerAdapter.getListSize();
         boolean canLoop = mBannerManager.getBannerOptions().isCanLoop();
@@ -284,6 +333,16 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
 //        }
     }
 
+    /**
+     * 页面滚动时的回调处理
+     * 当页面滚动时执行以下操作：
+     * 1. 计算真实的页面位置
+     * 2. 通知注册的页面变化回调接口
+     *
+     * @param position             当前页面位置
+     * @param positionOffset       偏移量
+     * @param positionOffsetPixels 偏移像素
+     */
     private void pageScrolled(int position, float positionOffset, int positionOffsetPixels) {
         int listSize = mBannerPagerAdapter.getListSize();
         boolean canLoop = mBannerManager.getBannerOptions().isCanLoop();
@@ -298,6 +357,12 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
     }
 
+    /**
+     * 处理轮播位置更新
+     * 如果适配器不为空、数据项大于1且启用了自动播放，则切换到下一页
+     * 并根据设置决定是否平滑滚动
+     * 最后重新安排下一次轮播任务
+     */
     private void handlePosition() {
         if (mBannerPagerAdapter != null && mBannerPagerAdapter.getListSize() > 1 && isAutoPlay()) {
             mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1, mBannerManager.getBannerOptions().isAutoScrollSmoothly());
@@ -305,6 +370,13 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
     }
 
+    /**
+     * 初始化Banner数据
+     * 获取适配器中的数据列表，并进行以下初始化操作：
+     * 1. 设置指示器相关值
+     * 2. 设置ViewPager
+     * 3. 初始化圆角效果
+     */
     private void initBannerData() {
         List<T> list = mBannerPagerAdapter.getData();
         if (list != null) {
@@ -494,6 +566,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
 
     /**
      * @return BannerViewPager data set
+     * 获取BannerViewPager的数据集
+     * 如果适配器不为空，则返回适配器中的数据列表
+     * 否则返回一个空的列表
      */
     public List<T> getData() {
         if (mBannerPagerAdapter != null) {
@@ -504,6 +579,12 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
 
     /**
      * Start loop
+     * 开始轮播，只有在满足以下条件时才会真正开始轮播：
+     * 1. 当前未在轮播中
+     * 2. 已启用自动播放
+     * 3. 适配器不为空且数据项大于1
+     * 4. 视图已附加到窗口
+     * 5. 生命周期状态为RESUMED或CREATED
      */
     public void startLoop() {
         if (!isLooping && isAutoPlay() && mBannerPagerAdapter != null && mBannerPagerAdapter.getListSize() > 1 && isAttachedToWindow() && (lifecycleRegistry == null || lifecycleRegistry.getCurrentState() == Lifecycle.State.RESUMED || lifecycleRegistry.getCurrentState() == Lifecycle.State.CREATED)) {
@@ -513,7 +594,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Start loop immediately
+     * 立即开始轮播
      */
     public void startLoopNow() {
         if (!isLooping && isAutoPlay() && mBannerPagerAdapter != null && mBannerPagerAdapter.getListSize() > 1) {
@@ -524,6 +605,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
 
     /**
      * Stop loop
+     * 停止轮播，移除轮播任务并更新轮播状态
      */
     public void stopLoop() {
         if (isLooping) {
@@ -542,9 +624,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set round rectangle effect for BannerViewPager.
+     * 为BannerViewPager设置圆角矩形效果。
      *
-     * @param radius round radius
+     * @param radius 圆角半径
      */
     public BannerViewPager<T> setRoundCorner(@Px int radius) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -556,12 +638,12 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set round rectangle effect for BannerViewPager.
+     * 为BannerViewPager设置圆角矩形效果。
      *
-     * @param topLeftRadius     top left round radius
-     * @param topRightRadius    top right round radius
-     * @param bottomLeftRadius  bottom left round radius
-     * @param bottomRightRadius bottom right round radius
+     * @param topLeftRadius     左上圆角半径
+     * @param topRightRadius    右上圆角半径
+     * @param bottomLeftRadius  左下圆角半径
+     * @param bottomRightRadius 右下圆角半径
      */
     public BannerViewPager<T> setRoundCorner(@Px int topLeftRadius, @Px int topRightRadius, int bottomLeftRadius, int bottomRightRadius) {
         mRadiusRectF = new RectF();
@@ -571,9 +653,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Enable/disable auto play
+     * 启用/禁用自动播放
      *
-     * @param autoPlay is enable auto play
+     * @param autoPlay 是否启用自动播放
      */
     public BannerViewPager<T> setAutoPlay(boolean autoPlay) {
         mBannerManager.getBannerOptions().setAutoPlay(autoPlay);
@@ -584,9 +666,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Enable/disable loop
+     * 启用/禁用循环播放
      *
-     * @param canLoop is can loop
+     * @param canLoop 是否可以循环播放
      */
     public BannerViewPager<T> setCanLoop(boolean canLoop) {
         mBannerManager.getBannerOptions().setCanLoop(canLoop);
@@ -597,9 +679,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set loop interval
+     * 设置循环间隔
      *
-     * @param interval loop interval,unit is millisecond.
+     * @param interval 循环间隔，单位是毫秒。
      */
     public BannerViewPager<T> setInterval(int interval) {
         mBannerManager.getBannerOptions().setInterval(interval);
@@ -607,7 +689,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * @param transformer PageTransformer that will modify each page's animation properties
+     * @param transformer 页面变换器，将修改每个页面的动画属性
      */
     public BannerViewPager<T> setPageTransformer(@Nullable ViewPager2.PageTransformer transformer) {
         if (transformer != null) {
@@ -617,7 +699,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * @param transformer PageTransformer that will modify each page's animation properties
+     * @param transformer 页面变换器，将修改每个页面的动画属性
      */
     public BannerViewPager<T> addPageTransformer(@Nullable ViewPager2.PageTransformer transformer) {
         if (transformer != null) {
@@ -641,9 +723,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * set page margin
+     * 设置页面间距
      *
-     * @param pageMargin page margin
+     * @param pageMargin 页面间距
      */
     public BannerViewPager<T> setPageMargin(@Px int pageMargin) {
         mBannerManager.setPageMargin(pageMargin);
@@ -651,9 +733,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * set item click listener
+     * 设置项目点击监听器
      *
-     * @param onPageClickListener item click listener
+     * @param onPageClickListener 项目点击监听器
      */
     public BannerViewPager<T> setOnPageClickListener(OnPageClickListener onPageClickListener) {
         setOnPageClickListener(onPageClickListener, false);
@@ -673,9 +755,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set page scroll duration
+     * 设置页面滚动持续时间
      *
-     * @param scrollDuration page scroll duration
+     * @param scrollDuration 页面滚动持续时间
      */
     public BannerViewPager<T> setScrollDuration(int scrollDuration) {
         mBannerManager.getBannerOptions().setScrollDuration(scrollDuration);
@@ -683,10 +765,10 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * set indicator color
+     * 设置指示器颜色
      *
-     * @param checkedColor checked color of indicator
-     * @param normalColor  unchecked color of indicator
+     * @param checkedColor 指示器选中颜色
+     * @param normalColor  指示器未选中颜色
      */
     public BannerViewPager<T> setIndicatorSliderColor(@ColorInt int normalColor, @ColorInt int checkedColor) {
         mBannerManager.getBannerOptions().setIndicatorSliderColor(normalColor, checkedColor);
@@ -694,11 +776,11 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * set indicator circle radius
+     * 设置指示器圆点半径
      * <p>
-     * if the indicator style is {@link com.zhpan.indicator.enums.IndicatorStyle#DASH}
-     * or {@link com.zhpan.indicator.enums.IndicatorStyle#ROUND_RECT}
-     * the indicator dash width=2*radius
+     * 如果指示器样式是 {@link com.zhpan.indicator.enums.IndicatorStyle#DASH}
+     * 或 {@link com.zhpan.indicator.enums.IndicatorStyle#ROUND_RECT}
+     * 指示器短线条宽度=2*半径
      *
      * @param radius 指示器圆点半径
      */
@@ -708,10 +790,10 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * set indicator circle radius
+     * 设置指示器圆点半径
      *
-     * @param normalRadius  unchecked circle radius
-     * @param checkedRadius checked circle radius
+     * @param normalRadius  未选中圆点半径
+     * @param checkedRadius 选中圆点半径
      */
     public BannerViewPager<T> setIndicatorSliderRadius(@Px int normalRadius, @Px int checkedRadius) {
         mBannerManager.getBannerOptions().setIndicatorSliderWidth(normalRadius * 2, checkedRadius * 2);
@@ -724,24 +806,24 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set indicator dash width，if indicator style is
+     * 设置指示器短线条宽度，如果指示器样式是
      * {@link com.zhpan.indicator.enums.IndicatorStyle#CIRCLE},
-     * the indicator circle radius is indicatorWidth/2.
+     * 指示器圆半径是indicatorWidth/2.
      *
-     * @param normalWidth if the indicator style is
+     * @param normalWidth 如果指示器样式是
      *                    {@link com.zhpan.indicator.enums.IndicatorStyle#DASH}
-     *                    the params means unchecked dash width
-     *                    if the indicator style is {@link com.zhpan.indicator.enums.IndicatorStyle#ROUND_RECT}  means
-     *                    unchecked round rectangle width
-     *                    if the indicator style is {@link com.zhpan.indicator.enums.IndicatorStyle#CIRCLE } means
-     *                    unchecked circle diameter
-     * @param checkWidth  if the indicator style is
+     *                    参数表示未选中的短线条宽度
+     *                    如果指示器样式是 {@link com.zhpan.indicator.enums.IndicatorStyle#ROUND_RECT} 表示
+     *                    未选中的圆角矩形宽度
+     *                    如果指示器样式是 {@link com.zhpan.indicator.enums.IndicatorStyle#CIRCLE } 表示
+     *                    未选中的圆形直径
+     * @param checkWidth  如果指示器样式是
      *                    {@link com.zhpan.indicator.enums.IndicatorStyle#DASH}
-     *                    the params means checked dash width
-     *                    if the indicator style is {@link com.zhpan.indicator.enums.IndicatorStyle#ROUND_RECT} the
-     *                    params means checked round rectangle width
-     *                    if the indicator style is {@link com.zhpan.indicator.enums.IndicatorStyle#CIRCLE } means
-     *                    checked circle diameter
+     *                    参数表示选中的短线条宽度
+     *                    如果指示器样式是 {@link com.zhpan.indicator.enums.IndicatorStyle#ROUND_RECT}
+     *                    参数表示选中的圆角矩形宽度
+     *                    如果指示器样式是 {@link com.zhpan.indicator.enums.IndicatorStyle#CIRCLE } 表示
+     *                    选中的圆形直径
      */
     public BannerViewPager<T> setIndicatorSliderWidth(@Px int normalWidth, @Px int checkWidth) {
         mBannerManager.getBannerOptions().setIndicatorSliderWidth(normalWidth, checkWidth);
@@ -754,9 +836,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set Indicator gap of dash/circle
+     * 设置指示器短线条/圆点的间距
      *
-     * @param indicatorGap indicator gap
+     * @param indicatorGap 指示器间距
      */
     public BannerViewPager<T> setIndicatorSliderGap(@Px int indicatorGap) {
         mBannerManager.getBannerOptions().setIndicatorGap(indicatorGap);
@@ -764,9 +846,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set the visibility state of indicator view.
+     * 设置指示器视图的可见性状态
      *
-     * @param visibility One of {@link View#VISIBLE}, {@link View#INVISIBLE}, or {@link View#GONE}.
+     * @param visibility 可见性状态，可选值为 {@link View#VISIBLE}, {@link View#INVISIBLE}, 或 {@link View#GONE}.
      */
     public BannerViewPager<T> setIndicatorVisibility(@Visibility int visibility) {
         mBannerManager.getBannerOptions().setIndicatorVisibility(visibility);
@@ -775,9 +857,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * set indicator gravity in BannerViewPager
+     * 设置BannerViewPager中指示器的对齐方式
      *
-     * @param gravity indicator gravity
+     * @param gravity 指示器对齐方式
      *                {@link com.zhpan.bannerview.constants.IndicatorGravity#CENTER}
      *                {@link com.zhpan.bannerview.constants.IndicatorGravity#START}
      *                {@link com.zhpan.bannerview.constants.IndicatorGravity#END}
@@ -788,10 +870,10 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set Indicator slide mode，default value is
+     * 设置指示器滑动模式，默认值是
      * {@link com.zhpan.indicator.enums.IndicatorSlideMode#NORMAL}
      *
-     * @param slideMode Indicator slide mode
+     * @param slideMode 指示器滑动模式
      * @see com.zhpan.indicator.enums.IndicatorSlideMode#NORMAL
      * @see com.zhpan.indicator.enums.IndicatorSlideMode#SMOOTH
      */
@@ -801,10 +883,10 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set custom indicator.
-     * the custom indicator view must extends BaseIndicator or implements IIndicator
+     * 设置自定义指示器
+     * 自定义指示器视图必须继承BaseIndicator或实现IIndicator接口
      *
-     * @param customIndicator custom indicator view
+     * @param customIndicator 自定义指示器视图
      */
     public BannerViewPager<T> setIndicatorView(IIndicator customIndicator) {
         if (customIndicator instanceof View) {
@@ -815,9 +897,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set indicator style
+     * 设置指示器样式
      *
-     * @param indicatorStyle indicator style
+     * @param indicatorStyle 指示器样式
      * @see com.zhpan.indicator.enums.IndicatorStyle#CIRCLE
      * @see com.zhpan.indicator.enums.IndicatorStyle#DASH
      * @see com.zhpan.indicator.enums.IndicatorStyle#ROUND_RECT
@@ -828,8 +910,8 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Create BannerViewPager with data.
-     * If data has fetched when create BannerViewPager,you can call this method.
+     * 使用数据创建BannerViewPager
+     * 如果在创建BannerViewPager时已经获取到数据，可以调用此方法
      */
     public void create(List<T> data) {
         if (mBannerPagerAdapter == null) {
@@ -840,20 +922,18 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Create BannerViewPager with no data
-     * If there is no data while you create BannerViewPager(for example,The data is from remote
-     * server)，you can call this method.
-     * Then,while you fetch data successfully,just need call {@link #refreshData(List)} method to
-     * refresh.
+     * 创建无数据的BannerViewPager
+     * 如果在创建BannerViewPager时没有数据（例如，数据来自远程服务器），可以调用此方法
+     * 然后，当成功获取数据时，只需调用 {@link #refreshData(List)} 方法刷新即可
      */
     public void create() {
         create(new ArrayList<>());
     }
 
     /**
-     * Sets the orientation of the ViewPager2.
+     * 设置ViewPager2的方向
      *
-     * @param orientation {@link ViewPager2#ORIENTATION_HORIZONTAL} or
+     * @param orientation {@link ViewPager2#ORIENTATION_HORIZONTAL} 或
      *                    {@link ViewPager2#ORIENTATION_VERTICAL}
      */
     public BannerViewPager<T> setOrientation(@ViewPager2.Orientation int orientation) {
@@ -886,12 +966,12 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Refresh data.
-     * Confirm the {@link #create()} or {@link #create(List)} method has been called,
-     * else the data won't be shown.
-     * Fix #209 如果BVP没有 attach 到 Window 上的时候刷新 ViewPager2 就会导致
-     * ViewPager2 的 currentItem 被 reset 为 0，故出现 BVP 的 item 快速滚动问题
-     * 为了避免这一问题，只能在已经attach 到 Window 上的时候去刷新数据。
+     * 刷新数据
+     * 确认已调用 {@link #create()} 或 {@link #create(List)} 方法，
+     * 否则数据将不会显示
+     * 修复 #209 如果BVP没有附加到Window上时刷新ViewPager2会导致
+     * ViewPager2的currentItem被重置为0，从而导致BVP项目快速滚动问题
+     * 为避免此问题，只能在已附加到Window上时刷新数据
      */
     public void refreshData(List<? extends T> list) {
         post(() -> {
@@ -932,10 +1012,10 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Inserts the specified element at the specified position in this list
+     * 在此列表中的指定位置插入指定元素
      *
-     * @param index index at which the specified element is to be inserted
-     * @param item  item element to be inserted
+     * @param index 要插入指定元素的索引
+     * @param item  要插入的元素
      */
     public void insertItem(int index, T item) {
         List<T> data = mBannerPagerAdapter.getData();
@@ -956,28 +1036,27 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * @return the currently selected page position.
+     * @return 当前选中的页面位置。
      */
     public int getCurrentItem() {
         return currentPosition;
     }
 
     /**
-     * Set the currently selected page. If the ViewPager has already been through its first
-     * layout with its current adapter there will be a smooth animated transition between
-     * the current item and the specified item.
+     * 设置当前选中的页面。如果ViewPager已经完成了与当前适配器的第一次布局，
+     * 则当前项目和指定项目之间将有平滑的动画过渡。
      *
-     * @param item Item index to select
+     * @param item 要选择的项目索引
      */
     public void setCurrentItem(int item) {
         setCurrentItem(item, true);
     }
 
     /**
-     * Set the currently selected page.
+     * 设置当前选中的页面。
      *
-     * @param item         Item index to select
-     * @param smoothScroll True to smoothly scroll to the new item, false to transition immediately
+     * @param item         要选择的项目索引
+     * @param smoothScroll true表示平滑滚动到新项目，false表示立即过渡
      */
     public void setCurrentItem(int item, boolean smoothScroll) {
         if (isCanLoopSafely()) {
@@ -992,8 +1071,8 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set the default PageTrans former for {@link ViewPager2}
-     * Option params:
+     * 为 {@link ViewPager2} 设置默认的页面变换器
+     * 可选参数:
      * {@link PageStyle#MULTI_PAGE_OVERLAP}
      * {@link PageStyle#MULTI_PAGE_SCALE}
      * {@link PageStyle#NORMAL}
@@ -1009,8 +1088,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * @param revealWidth In the multi-page mode, The exposed width of the items on the left and right
-     *                    sides
+     * @param revealWidth 在多页模式下，左右两侧项目的暴露宽度
      */
     public BannerViewPager<T> setRevealWidth(@Px int revealWidth) {
         setRevealWidth(revealWidth, revealWidth);
@@ -1018,10 +1096,10 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * This method is apply to multi-page mode {@link #setPageStyle(int)}
+     * 此方法适用于多页模式 {@link #setPageStyle(int)}
      *
-     * @param leftRevealWidth  The exposed width of left side
-     * @param rightRevealWidth The exposed width of right side
+     * @param leftRevealWidth  左侧暴露宽度
+     * @param rightRevealWidth 右侧暴露宽度
      */
     public BannerViewPager<T> setRevealWidth(@Px int leftRevealWidth, @Px int rightRevealWidth) {
         mBannerManager.getBannerOptions().setRightRevealWidth(rightRevealWidth);
@@ -1030,7 +1108,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Suggest to use default offScreenPageLimit.
+     * 建议使用默认的offScreenPageLimit。
      */
     public BannerViewPager<T> setOffScreenPageLimit(int offScreenPageLimit) {
         mBannerManager.getBannerOptions().setOffScreenPageLimit(offScreenPageLimit);
@@ -1043,7 +1121,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Enable or disable user initiated scrolling
+     * 启用或禁用用户发起的滚动
      */
     public BannerViewPager<T> setUserInputEnabled(boolean userInputEnabled) {
         mBannerManager.getBannerOptions().setUserInputEnabled(userInputEnabled);
@@ -1061,7 +1139,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * @deprecated use {@link #registerLifecycleObserver(Lifecycle)} instead.
+     * @deprecated 使用 {@link #registerLifecycleObserver(Lifecycle)} 代替。
      */
     @Deprecated
     public BannerViewPager<T> setLifecycleRegistry(Lifecycle lifecycleRegistry) {
@@ -1121,10 +1199,10 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set right to left mode.
+     * 设置从右到左模式。
      *
-     * @param rtlMode true:right to left mode,
-     *                false:right to left mode.
+     * @param rtlMode true:从右到左模式,
+     *                false:从右到左模式。
      */
     public BannerViewPager<T> setRTLMode(boolean rtlMode) {
         mViewPager.setLayoutDirection(rtlMode ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
@@ -1152,7 +1230,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * @param autoScrollSmoothly is auto play scroll smoothly.
+     * @param autoScrollSmoothly 是否自动播放滚动平滑。
      */
     public BannerViewPager<T> setAutoPlaySmoothly(boolean autoScrollSmoothly) {
         mBannerManager.getBannerOptions().setAutoScrollSmoothly(autoScrollSmoothly);
@@ -1160,7 +1238,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * @deprecated Use {@link BannerViewPager#disallowParentInterceptDownEvent(boolean)} instead.
+     * @deprecated 使用 {@link BannerViewPager#disallowParentInterceptDownEvent(boolean)} 代替。
      */
     @Deprecated
     public BannerViewPager<T> disallowInterceptTouchEvent(boolean disallowIntercept) {
@@ -1169,10 +1247,10 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set round rectangle effect for BannerViewPager.
+     * 为BannerViewPager设置圆角矩形效果。
      *
-     * @param radius round radius
-     * @deprecated Use {@link #setRoundCorner(int)} instead.
+     * @param radius 圆角半径
+     * @deprecated 使用 {@link #setRoundCorner(int)} 代替。
      */
     @Deprecated
     public BannerViewPager<T> setRoundRect(@Px int radius) {
@@ -1180,13 +1258,13 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     /**
-     * Set round rectangle effect for BannerViewPager.
+     * 为BannerViewPager设置圆角矩形效果。
      *
-     * @param topLeftRadius     top left round radius
-     * @param topRightRadius    top right round radius
-     * @param bottomLeftRadius  bottom left round radius
-     * @param bottomRightRadius bottom right round radius
-     * @deprecated Use {@link #setRoundCorner(int, int, int, int)} instead.
+     * @param topLeftRadius     左上圆角半径
+     * @param topRightRadius    右上圆角半径
+     * @param bottomLeftRadius  左下圆角半径
+     * @param bottomRightRadius 右下圆角半径
+     * @deprecated 使用 {@link #setRoundCorner(int, int, int, int)} 代替。
      */
     @Deprecated
     public BannerViewPager<T> setRoundRect(@Px int topLeftRadius, @Px int topRightRadius, int bottomLeftRadius, int bottomRightRadius) {

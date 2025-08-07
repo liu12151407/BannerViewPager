@@ -26,12 +26,12 @@ public interface PageStyle {
 
     int NORMAL = 0;
     /**
-     * @deprecated please use {@link com.zhpan.bannerview.BannerViewPager#setRevealWidth(int)} instead.
+     * @deprecated 请使用 {@link com.zhpan.bannerview.BannerViewPager#setRevealWidth(int)} 代替。
      */
     @Deprecated
     int MULTI_PAGE = 1 << 1;
     /**
-     * Requires Api Version >= 21
+     * 需要Api版本 >= 21
      */
     int MULTI_PAGE_OVERLAP = 1 << 2;
 

@@ -24,8 +24,8 @@ import kotlin.math.abs
 import kotlin.math.max
 
 /**
- * @param: gives veiwpager2 orientation
- * Source from：https://github.com/KoderLabs/finite-cover-flow/blob/dev/lib/src/main/java/com/saeed/finiteflow/lib/OverlapSliderTransformer.kt
+ * @param: 提供viewpager2方向
+ * 来源：https://github.com/KoderLabs/finite-cover-flow/blob/dev/lib/src/main/java/com/saeed/finiteflow/lib/OverlapSliderTransformer.kt
  */
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 class OverlapPageTransformer(
@@ -37,10 +37,10 @@ class OverlapPageTransformer(
 ) : ViewPager2.PageTransformer {
 
     init {
-        require(minScale in 0f..1f) { "minScale value should be between 1.0 to 0.0" }
+        require(minScale in 0f..1f) { "minScale值应在1.0到0.0之间" }
         require(
             unSelectedItemAlpha in 0f..1f
-        ) { "unSelectedItemAlpha value should be between 1.0 to 0.0" }
+        ) { "unSelectedItemAlpha值应在1.0到0.0之间" }
     }
 
     private var scalingValue = 0.2f
@@ -95,8 +95,8 @@ class OverlapPageTransformer(
                 }
 
                 else -> throw IllegalArgumentException(
-                    "Gives correct orientation value, ViewPager2.ORIENTATION_HORIZONTAL or ViewPager2.ORIENTATION_VERTICAL"
-                )
+                "提供正确的方向值，ViewPager2.ORIENTATION_HORIZONTAL或ViewPager2.ORIENTATION_VERTICAL"
+            )
             }
 
             if (unSelectedItemAlpha != 1f) {

@@ -34,7 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * @author zhangpan
+ * @author 张盼
  * @date 2020/12/21
  */
 public class ScrollDurationManger extends LinearLayoutManager {
@@ -93,6 +93,6 @@ public class ScrollDurationManger extends LinearLayoutManager {
     public boolean requestChildRectangleOnScreen(@NonNull RecyclerView parent,
                                                  @NonNull View child, @NonNull Rect rect, boolean immediate,
                                                  boolean focusedChildVisible) {
-        return false; // users should use setCurrentItem instead
+        return false; // 用户应使用setCurrentItem代替
     }
 }

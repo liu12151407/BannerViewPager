@@ -35,9 +35,9 @@ import com.zhpan.bannerview.annotation.Visibility;
 
 /**
  * <pre>
- *   Created by zhpan on 2020/4/5.
- *   Attention:Don't use {@link RecyclerView.ViewHolder#getAdapterPosition}
- *   method to get position,this method will return a fake position.
+ *   由zhpan于2020/4/5创建。
+ *   注意：不要使用{@link RecyclerView.ViewHolder#getAdapterPosition}
+ *   方法获取位置，此方法将返回一个虚假位置。
  * </pre>
  */
 @SuppressWarnings("unused")
@@ -50,7 +50,7 @@ public class BaseViewHolder<T> extends RecyclerView.ViewHolder {
     }
 
     /**
-     * @deprecated bind data in adapter please.
+     * @deprecated 请在适配器中绑定数据。
      */
     @Deprecated
     public void bindData(T data, int position, int pageSize) {

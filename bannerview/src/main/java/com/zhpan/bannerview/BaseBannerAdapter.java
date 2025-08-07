@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by zhpan on 2017/3/28.
+ * 由zhpan于2017/3/28创建。
  */
 public abstract class BaseBannerAdapter<T> extends RecyclerView.Adapter<BaseViewHolder<T>> {
     protected List<T> mList = new ArrayList<>();
@@ -110,32 +110,30 @@ public abstract class BaseBannerAdapter<T> extends RecyclerView.Adapter<BaseView
     }
 
     /**
-     * Generally,subclasses do not need to override this method，Unless you want to use a custom ViewHolder.
-     * This method called by {@link #onCreateViewHolder(ViewGroup, int)} to create a default {@link
+     * 通常，子类不需要重写此方法，除非您想使用自定义的ViewHolder。
+     * 此方法由{@link #onCreateViewHolder(ViewGroup, int)}调用以创建默认的{@link
      * BaseViewHolder}
      *
-     * @param parent   The ViewGroup into which the new View will be added after it is bound to
-     *                 an adapter position.
-     * @param itemView Item View.
-     * @param viewType The view type of the new View.
-     * @return ViewHolder extends {@link BaseViewHolder}.
+     * @param parent   新View绑定到适配器位置后将添加到的ViewGroup。
+     * @param itemView 项目View。
+     * @param viewType 新View的视图类型。
+     * @return 扩展自{@link BaseViewHolder}的ViewHolder。
      */
     public BaseViewHolder<T> createViewHolder(@NonNull ViewGroup parent, View itemView, int viewType) {
         return new BaseViewHolder<>(itemView);
     }
 
     /**
-     * @param holder   The ViewHolder which should be updated to represent the contents of the
-     *                 item at the given position in the data set.
-     * @param data     Current item data.
-     * @param position Current item position.
-     * @param pageSize Page size of BVP,equals {@link BaseBannerAdapter#getListSize()}.
+     * @param holder   应该更新以表示数据集中给定位置项目内容的ViewHolder。
+     * @param data     当前项目数据。
+     * @param position 当前项目位置。
+     * @param pageSize BVP的页面大小，等于{@link BaseBannerAdapter#getListSize()}。
      */
     protected abstract void bindData(BaseViewHolder<T> holder, T data, int position, int pageSize);
 
     /**
-     * @param viewType The view type of the new View.
-     * @return The item view layout.
+     * @param viewType 新View的视图类型。
+     * @return 项目视图布局。
      */
     public abstract @LayoutRes int getLayoutId(int viewType);
 
