@@ -251,6 +251,12 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         return super.onInterceptTouchEvent(ev);
     }
 
+    /**
+     * 请求父视图不要拦截触摸事件
+     * 当Banner需要处理垂直滑动时，调用此方法通知父视图不要拦截触摸事件
+     *
+     * @param disallowIntercept 是否禁止父视图拦截触摸事件，true表示禁止，false表示允许
+     */
     private void requestParentDisallowInterceptTouchEvent(boolean disallowIntercept) {
         ViewParent parent = getParent();
         if (parent != null) {
@@ -258,40 +264,71 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
     }
 
+
+    /**
+     * 处理垂直方向上的ACTION_MOVE事件
+     * 根据当前页面位置和滑动方向判断是否需要请求父视图不拦截触摸事件
+     *
+     * @param endY 当前触摸点的Y坐标
+     * @param disX X轴方向上的滑动距离
+     * @param disY Y轴方向上的滑动距离
+     */
     private void onVerticalActionMove(int endY, int disX, int disY) {
+        // 当垂直滑动距离大于水平滑动距离时
         if (disY > disX) {
             boolean canLoop = mBannerManager.getBannerOptions().isCanLoop();
+            // 如果不允许循环播放
             if (!canLoop) {
+                // 如果在第一页且向下滑动，则允许父视图拦截事件
                 if (currentPosition == 0 && endY - startY > 0) {
                     requestParentDisallowInterceptTouchEvent(false);
                 } else {
+                    // 判断是否需要禁止父视图拦截事件
                     boolean disallowIntercept = currentPosition != getData().size() - 1 || endY - startY >= 0;
                     requestParentDisallowInterceptTouchEvent(disallowIntercept);
                 }
             } else {
+                // 允许循环播放时，禁止父视图拦截事件
                 requestParentDisallowInterceptTouchEvent(true);
             }
         } else if (disX > disY) {
+            // 当水平滑动距离大于垂直滑动距离时，允许父视图拦截事件
             requestParentDisallowInterceptTouchEvent(false);
         }
     }
 
+
+    /**
+     * 处理水平方向上的ACTION_MOVE事件
+     * 根据当前页面位置和滑动方向判断是否需要请求父视图不拦截触摸事件
+     *
+     * @param endX 当前触摸点的X坐标
+     * @param disX X轴方向上的滑动距离
+     * @param disY Y轴方向上的滑动距离
+     */
     private void onHorizontalActionMove(int endX, int disX, int disY) {
+        // 当水平滑动距离大于垂直滑动距离时
         if (disX > disY) {
             boolean canLoop = mBannerManager.getBannerOptions().isCanLoop();
+            // 如果不允许循环播放
             if (!canLoop) {
+                // 如果在第一页且向右滑动，则允许父视图拦截事件
                 if (currentPosition == 0 && endX - startX > 0) {
                     requestParentDisallowInterceptTouchEvent(false);
                 } else {
+                    // 判断是否需要禁止父视图拦截事件
                     requestParentDisallowInterceptTouchEvent(currentPosition != getData().size() - 1 || endX - startX >= 0);
                 }
             } else {
+                // 允许循环播放时，禁止父视图拦截事件
                 requestParentDisallowInterceptTouchEvent(true);
             }
         } else if (disY > disX) {
+            // 当垂直滑动距离大于水平滑动距离时，允许父视图拦截事件
             requestParentDisallowInterceptTouchEvent(false);
         }
     }
+
 
     /**
      * 页面滚动状态改变时的回调处理
@@ -386,6 +423,13 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
     }
 
+    /**
+     * 设置指示器相关值
+     * 根据Banner配置选项设置指示器的可见性，重置指示器选项，
+     * 并根据是否使用自定义指示器或需要创建新的指示器视图来初始化指示器
+     *
+     * @param list 数据列表，用于初始化指示器
+     */
     private void setIndicatorValues(List<? extends T> list) {
         BannerOptions bannerOptions = mBannerManager.getBannerOptions();
         mIndicatorLayout.setVisibility(bannerOptions.getIndicatorVisibility());
@@ -398,7 +442,14 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         initIndicator(bannerOptions.getIndicatorOptions(), list);
     }
 
+    /**
+     * 初始化指示器控件
+     *
+     * @param indicatorOptions 指示器配置选项，包含指示器的样式、颜色、大小等配置信息
+     * @param list             数据列表，用于设置指示器的页面数量
+     */
     private void initIndicator(IndicatorOptions indicatorOptions, List<? extends T> list) {
+        // 检查指示器视图是否已添加到父布局，避免重复添加
         if (((View) mIndicatorView).getParent() == null) {
             mIndicatorLayout.removeAllViews();
             mIndicatorLayout.addView((View) mIndicatorView);
@@ -410,8 +461,16 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         mIndicatorView.notifyDataChanged();
     }
 
+
+    /**
+     * 初始化指示器的重力位置
+     * 该方法根据Banner配置中的指示器重力属性，设置指示器视图在父布局中的对齐方式
+     * 无参数
+     * 无返回值
+     */
     private void initIndicatorGravity() {
         LayoutParams layoutParams = (LayoutParams) ((View) mIndicatorView).getLayoutParams();
+        // 根据指示器重力设置不同的布局规则
         switch (mBannerManager.getBannerOptions().getIndicatorGravity()) {
             case CENTER:
                 layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -427,9 +486,18 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
     }
 
+
+    /**
+     * 初始化指示器边距
+     * 该方法根据Banner配置中的指示器边距属性，设置指示器视图的外边距
+     * 如果未设置边距，则使用默认的10dp边距
+     * 无参数
+     * 无返回值
+     */
     private void initIndicatorSliderMargin() {
         MarginLayoutParams layoutParams = (MarginLayoutParams) ((View) mIndicatorView).getLayoutParams();
         BannerOptions.IndicatorMargin indicatorMargin = mBannerManager.getBannerOptions().getIndicatorMargin();
+        // 如果未设置指示器边距，则使用默认的10dp边距
         if (indicatorMargin == null) {
             int dp10 = BannerUtils.dp2px(10);
             layoutParams.setMargins(dp10, dp10, dp10, dp10);
@@ -438,13 +506,26 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
     }
 
+
+    /**
+     * 判断Banner在从窗口分离时是否停止轮播
+     *
+     * @return true表示在从窗口分离时停止轮播，false表示不停止
+     */
     private boolean isStopLoopWhenDetachedFromWindow() {
         return mBannerManager.getBannerOptions().isStopLoopWhenDetachedFromWindow();
     }
 
+
+    /**
+     * 分发绘制事件，在绘制Banner时添加圆角裁剪效果
+     *
+     * @param canvas 画布对象，用于绘制Banner内容
+     */
     @Override
     protected void dispatchDraw(@NonNull Canvas canvas) {
         float[] roundRectRadiusArray = mBannerManager.getBannerOptions().getRoundRectRadiusArray();
+        // 如果圆角裁剪相关参数已设置，则进行圆角裁剪处理
         if (mRadiusRectF != null && mRadiusPath != null && roundRectRadiusArray != null) {
             mRadiusRectF.right = this.getWidth();
             mRadiusRectF.bottom = this.getHeight();
@@ -454,27 +535,46 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         super.dispatchDraw(canvas);
     }
 
+
+    /**
+     * 初始化Banner的圆角效果
+     * 根据Banner配置中的圆角半径设置Banner的圆角效果，仅在Android 5.0及以上版本生效
+     * 无参数
+     * 无返回值
+     */
     private void initRoundCorner() {
         int roundCorner = mBannerManager.getBannerOptions().getRoundRectRadius();
+        // 当圆角半径大于0且系统版本为Android 5.0及以上时，应用圆角效果
         if (roundCorner > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             ViewStyleSetter.applyRoundCorner(this, roundCorner);
         }
     }
 
+
+    /**
+     * 设置ViewPager相关配置并初始化Banner
+     * 包括设置适配器、滚动时间、循环播放、页面变化监听器等相关配置
+     *
+     * @param list Banner数据列表
+     */
     private void setupViewPager(List<T> list) {
+        // 检查适配器是否已设置
         if (mBannerPagerAdapter == null) {
             throw new NullPointerException("You must set adapter for BannerViewPager");
         }
         BannerOptions bannerOptions = mBannerManager.getBannerOptions();
+        // 设置ViewPager的滚动时间
         if (bannerOptions.getScrollDuration() != 0) {
             ReflectLayoutManager.reflectLayoutManager(mViewPager, bannerOptions.getScrollDuration());
         }
         currentPosition = 0;
         mBannerPagerAdapter.setCanLoop(bannerOptions.isCanLoop());
         mViewPager.setAdapter(mBannerPagerAdapter);
+        // 安全地设置循环播放
         if (isCanLoopSafely()) {
             mViewPager.setCurrentItem(getOriginalPosition(list.size()), false);
         }
+        // 注册页面变化监听器
         mViewPager.unregisterOnPageChangeCallback(mOnPageChangeCallback);
         mViewPager.registerOnPageChangeCallback(mOnPageChangeCallback);
         mViewPager.setOrientation(bannerOptions.getOrientation());
@@ -484,16 +584,25 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         startLoop();
     }
 
+
+    /**
+     * 初始化ViewPager的显示宽度，用于设置页面的露出宽度效果
+     *
+     * @param bannerOptions Banner配置选项，包含露出宽度等参数
+     */
     private void initRevealWidth(BannerOptions bannerOptions) {
         int rightRevealWidth = bannerOptions.getRightRevealWidth();
         int leftRevealWidth = bannerOptions.getLeftRevealWidth();
+        // 当左右露出宽度与默认值不同时，需要设置RecyclerView的padding实现露出效果
         if (leftRevealWidth != DEFAULT_REVEAL_WIDTH || rightRevealWidth != DEFAULT_REVEAL_WIDTH) {
             RecyclerView recyclerView = (RecyclerView) mViewPager.getChildAt(0);
             int orientation = bannerOptions.getOrientation();
             int padding2 = bannerOptions.getPageMargin() + rightRevealWidth;
             int padding1 = bannerOptions.getPageMargin() + leftRevealWidth;
+            // 确保padding值不为负数
             if (padding1 < 0) padding1 = 0;
             if (padding2 < 0) padding2 = 0;
+            // 根据方向设置不同的padding
             if (orientation == ViewPager2.ORIENTATION_HORIZONTAL) {
                 recyclerView.setPadding(padding1, 0, padding2, 0);
             } else if (orientation == ViewPager2.ORIENTATION_VERTICAL) {
@@ -503,6 +612,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         }
         mBannerManager.createMarginTransformer();
     }
+
 
     private void initPageStyle(@APageStyle int pageStyle) {
         float pageScale = mBannerManager.getBannerOptions().getPageScale();
