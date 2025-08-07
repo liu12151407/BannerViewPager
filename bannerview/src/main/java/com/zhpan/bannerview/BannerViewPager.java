@@ -101,26 +101,25 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     private int startX, startY;
     private Lifecycle lifecycleRegistry;
 
-    private final ViewPager2.OnPageChangeCallback mOnPageChangeCallback =
-            new ViewPager2.OnPageChangeCallback() {
-                @Override
-                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                    super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-                    pageScrolled(position, positionOffset, positionOffsetPixels);
-                }
+    private final ViewPager2.OnPageChangeCallback mOnPageChangeCallback = new ViewPager2.OnPageChangeCallback() {
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+            pageScrolled(position, positionOffset, positionOffsetPixels);
+        }
 
-                @Override
-                public void onPageSelected(int position) {
-                    super.onPageSelected(position);
-                    pageSelected(position);
-                }
+        @Override
+        public void onPageSelected(int position) {
+            super.onPageSelected(position);
+            pageSelected(position);
+        }
 
-                @Override
-                public void onPageScrollStateChanged(int state) {
-                    super.onPageScrollStateChanged(state);
-                    pageScrollStateChanged(state);
-                }
-            };
+        @Override
+        public void onPageScrollStateChanged(int state) {
+            super.onPageScrollStateChanged(state);
+            pageScrollStateChanged(state);
+        }
+    };
 
     public BannerViewPager(Context context) {
         this(context, null);
@@ -185,9 +184,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        boolean doNotNeedIntercept = !mViewPager.isUserInputEnabled()
-                || mBannerPagerAdapter != null
-                && mBannerPagerAdapter.getData().size() <= 1;
+        boolean doNotNeedIntercept = !mViewPager.isUserInputEnabled() || mBannerPagerAdapter != null && mBannerPagerAdapter.getData().size() <= 1;
         if (doNotNeedIntercept) {
             return super.onInterceptTouchEvent(ev);
         }
@@ -195,8 +192,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
             case MotionEvent.ACTION_DOWN:
                 startX = (int) ev.getX();
                 startY = (int) ev.getY();
-                requestParentDisallowInterceptTouchEvent(!mBannerManager
-                        .getBannerOptions().isDisallowParentInterceptDownEvent());
+                requestParentDisallowInterceptTouchEvent(!mBannerManager.getBannerOptions().isDisallowParentInterceptDownEvent());
                 break;
             case MotionEvent.ACTION_MOVE:
                 int endX = (int) ev.getX();
@@ -235,8 +231,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
                 if (currentPosition == 0 && endY - startY > 0) {
                     requestParentDisallowInterceptTouchEvent(false);
                 } else {
-                    boolean disallowIntercept = currentPosition != getData().size() - 1
-                            || endY - startY >= 0;
+                    boolean disallowIntercept = currentPosition != getData().size() - 1 || endY - startY >= 0;
                     requestParentDisallowInterceptTouchEvent(disallowIntercept);
                 }
             } else {
@@ -254,8 +249,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
                 if (currentPosition == 0 && endX - startX > 0) {
                     requestParentDisallowInterceptTouchEvent(false);
                 } else {
-                    requestParentDisallowInterceptTouchEvent(currentPosition != getData().size() - 1
-                            || endX - startX >= 0);
+                    requestParentDisallowInterceptTouchEvent(currentPosition != getData().size() - 1 || endX - startX >= 0);
                 }
             } else {
                 requestParentDisallowInterceptTouchEvent(true);
@@ -266,9 +260,9 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     private void pageScrollStateChanged(int state) {
-        if (mIndicatorView != null) {
-            mIndicatorView.onPageScrollStateChanged(state);
-        }
+//        if (mIndicatorView != null) {
+//            mIndicatorView.onPageScrollStateChanged(state);
+//        }
         if (onPageChangeCallback != null) {
             onPageChangeCallback.onPageScrollStateChanged(state);
         }
@@ -278,17 +272,16 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         int size = mBannerPagerAdapter.getListSize();
         boolean canLoop = mBannerManager.getBannerOptions().isCanLoop();
         currentPosition = BannerUtils.getRealPosition(position, size);
-        boolean needResetCurrentItem =
-                size > 0 && canLoop && (position == 0 || position == MAX_VALUE - 1);
+        boolean needResetCurrentItem = size > 0 && canLoop && (position == 0 || position == MAX_VALUE - 1);
         if (needResetCurrentItem) {
             resetCurrentItem(currentPosition);
         }
         if (onPageChangeCallback != null) {
             onPageChangeCallback.onPageSelected(currentPosition);
         }
-        if (mIndicatorView != null) {
-            mIndicatorView.onPageSelected(currentPosition);
-        }
+//        if (mIndicatorView != null) {
+//            mIndicatorView.onPageSelected(currentPosition);
+//        }
     }
 
     private void pageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -299,16 +292,15 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
             if (onPageChangeCallback != null) {
                 onPageChangeCallback.onPageScrolled(realPosition, positionOffset, positionOffsetPixels);
             }
-            if (mIndicatorView != null) {
-                mIndicatorView.onPageScrolled(realPosition, positionOffset, positionOffsetPixels);
-            }
+//            if (mIndicatorView != null) {
+//                mIndicatorView.onPageScrolled(realPosition, positionOffset, positionOffsetPixels);
+//            }
         }
     }
 
     private void handlePosition() {
         if (mBannerPagerAdapter != null && mBannerPagerAdapter.getListSize() > 1 && isAutoPlay()) {
-            mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1,
-                    mBannerManager.getBannerOptions().isAutoScrollSmoothly());
+            mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1, mBannerManager.getBannerOptions().isAutoScrollSmoothly());
             mHandler.postDelayed(mRunnable, getInterval());
         }
     }
@@ -347,8 +339,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     private void initIndicatorGravity() {
-        LayoutParams layoutParams =
-                (LayoutParams) ((View) mIndicatorView).getLayoutParams();
+        LayoutParams layoutParams = (LayoutParams) ((View) mIndicatorView).getLayoutParams();
         switch (mBannerManager.getBannerOptions().getIndicatorGravity()) {
             case CENTER:
                 layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -365,16 +356,13 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     private void initIndicatorSliderMargin() {
-        MarginLayoutParams layoutParams =
-                (MarginLayoutParams) ((View) mIndicatorView).getLayoutParams();
-        BannerOptions.IndicatorMargin indicatorMargin =
-                mBannerManager.getBannerOptions().getIndicatorMargin();
+        MarginLayoutParams layoutParams = (MarginLayoutParams) ((View) mIndicatorView).getLayoutParams();
+        BannerOptions.IndicatorMargin indicatorMargin = mBannerManager.getBannerOptions().getIndicatorMargin();
         if (indicatorMargin == null) {
             int dp10 = BannerUtils.dp2px(10);
             layoutParams.setMargins(dp10, dp10, dp10, dp10);
         } else {
-            layoutParams.setMargins(indicatorMargin.getLeft(), indicatorMargin.getTop(),
-                    indicatorMargin.getRight(), indicatorMargin.getBottom());
+            layoutParams.setMargins(indicatorMargin.getLeft(), indicatorMargin.getTop(), indicatorMargin.getRight(), indicatorMargin.getBottom());
         }
     }
 
@@ -455,8 +443,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
 
     private void resetCurrentItem(int item) {
         if (isCanLoopSafely()) {
-            mViewPager.setCurrentItem(getOriginalPosition(mBannerPagerAdapter.getListSize()) + item,
-                    false);
+            mViewPager.setCurrentItem(getOriginalPosition(mBannerPagerAdapter.getListSize()) + item, false);
         } else {
             mViewPager.setCurrentItem(item, false);
         }
@@ -464,8 +451,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
 
     private void refreshIndicator(List<? extends T> data) {
         setIndicatorValues(data);
-        mBannerManager.getBannerOptions().getIndicatorOptions()
-                .setCurrentPosition(BannerUtils.getRealPosition(mViewPager.getCurrentItem(), data.size()));
+        mBannerManager.getBannerOptions().getIndicatorOptions().setCurrentPosition(BannerUtils.getRealPosition(mViewPager.getCurrentItem(), data.size()));
         mIndicatorView.notifyDataChanged();
     }
 
@@ -482,10 +468,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
     }
 
     private boolean isCanLoopSafely() {
-        return mBannerManager != null && mBannerManager.getBannerOptions() != null
-                && mBannerManager.getBannerOptions().isCanLoop()
-                && mBannerPagerAdapter != null
-                && mBannerPagerAdapter.getListSize() > 1;
+        return mBannerManager != null && mBannerManager.getBannerOptions() != null && mBannerManager.getBannerOptions().isCanLoop() && mBannerPagerAdapter != null && mBannerPagerAdapter.getListSize() > 1;
     }
 
     @Nullable
@@ -523,13 +506,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
      * Start loop
      */
     public void startLoop() {
-        if (!isLooping
-                && isAutoPlay()
-                && mBannerPagerAdapter != null
-                && mBannerPagerAdapter.getListSize() > 1
-                && isAttachedToWindow() && (lifecycleRegistry == null
-                || lifecycleRegistry.getCurrentState() == Lifecycle.State.RESUMED
-                || lifecycleRegistry.getCurrentState() == Lifecycle.State.CREATED)) {
+        if (!isLooping && isAutoPlay() && mBannerPagerAdapter != null && mBannerPagerAdapter.getListSize() > 1 && isAttachedToWindow() && (lifecycleRegistry == null || lifecycleRegistry.getCurrentState() == Lifecycle.State.RESUMED || lifecycleRegistry.getCurrentState() == Lifecycle.State.CREATED)) {
             mHandler.postDelayed(mRunnable, getInterval());
             isLooping = true;
         }
@@ -539,8 +516,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
      * Start loop immediately
      */
     public void startLoopNow() {
-        if (!isLooping && isAutoPlay() && mBannerPagerAdapter != null &&
-                mBannerPagerAdapter.getListSize() > 1) {
+        if (!isLooping && isAutoPlay() && mBannerPagerAdapter != null && mBannerPagerAdapter.getListSize() > 1) {
             mHandler.post(mRunnable);
             isLooping = true;
         }
@@ -587,13 +563,10 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
      * @param bottomLeftRadius  bottom left round radius
      * @param bottomRightRadius bottom right round radius
      */
-    public BannerViewPager<T> setRoundCorner(@Px int topLeftRadius, @Px int topRightRadius,
-                                             int bottomLeftRadius,
-                                             int bottomRightRadius) {
+    public BannerViewPager<T> setRoundCorner(@Px int topLeftRadius, @Px int topRightRadius, int bottomLeftRadius, int bottomRightRadius) {
         mRadiusRectF = new RectF();
         mRadiusPath = new Path();
-        mBannerManager.getBannerOptions()
-                .setRoundRectRadius(topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
+        mBannerManager.getBannerOptions().setRoundRectRadius(topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
         return this;
     }
 
@@ -687,17 +660,14 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         return this;
     }
 
-    public BannerViewPager<T> setOnPageClickListener(OnPageClickListener onPageClickListener,
-                                                     boolean scrollToThisItem) {
+    public BannerViewPager<T> setOnPageClickListener(OnPageClickListener onPageClickListener, boolean scrollToThisItem) {
         if (mBannerPagerAdapter != null) {
-            mBannerPagerAdapter.setPageClickListener(
-                    (clickedView, realPosition, adapterPosition) -> {
-                        onPageClickListener.onPageClick(
-                                clickedView, realPosition);
-                        if (scrollToThisItem) {
-                            mViewPager.setCurrentItem(adapterPosition);
-                        }
-                    });
+            mBannerPagerAdapter.setPageClickListener((clickedView, realPosition, adapterPosition) -> {
+                onPageClickListener.onPageClick(clickedView, realPosition);
+                if (scrollToThisItem) {
+                    mViewPager.setCurrentItem(adapterPosition);
+                }
+            });
         }
         return this;
     }
@@ -718,8 +688,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
      * @param checkedColor checked color of indicator
      * @param normalColor  unchecked color of indicator
      */
-    public BannerViewPager<T> setIndicatorSliderColor(@ColorInt int normalColor,
-                                                      @ColorInt int checkedColor) {
+    public BannerViewPager<T> setIndicatorSliderColor(@ColorInt int normalColor, @ColorInt int checkedColor) {
         mBannerManager.getBannerOptions().setIndicatorSliderColor(normalColor, checkedColor);
         return this;
     }
@@ -1014,8 +983,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         if (isCanLoopSafely()) {
             stopLoop();
             int currentItem = mViewPager.getCurrentItem();
-            int realPosition =
-                    BannerUtils.getRealPosition(currentItem, mBannerPagerAdapter.getListSize());
+            int realPosition = BannerUtils.getRealPosition(currentItem, mBannerPagerAdapter.getListSize());
             mViewPager.setCurrentItem(currentItem + (item - realPosition), smoothScroll);
             startLoop();
         } else {
@@ -1069,8 +1037,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         return this;
     }
 
-    public BannerViewPager<T> setIndicatorMargin(@Px int left, @Px int top, @Px int right,
-                                                 @Px int bottom) {
+    public BannerViewPager<T> setIndicatorMargin(@Px int left, @Px int top, @Px int right, @Px int bottom) {
         mBannerManager.getBannerOptions().setIndicatorMargin(left, top, right, bottom);
         return this;
     }
@@ -1088,8 +1055,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
         void onPageClick(View clickedView, int position);
     }
 
-    public BannerViewPager<T> registerOnPageChangeCallback(
-            ViewPager2.OnPageChangeCallback onPageChangeCallback) {
+    public BannerViewPager<T> registerOnPageChangeCallback(ViewPager2.OnPageChangeCallback onPageChangeCallback) {
         this.onPageChangeCallback = onPageChangeCallback;
         return this;
     }
@@ -1149,10 +1115,8 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
      *                                         false 允许BVP在{@link MotionEvent#ACTION_DOWN}时间中禁止父View的时间拦截，
      */
 
-    public BannerViewPager<T> disallowParentInterceptDownEvent(
-            boolean disallowParentInterceptDownEvent) {
-        mBannerManager.getBannerOptions()
-                .setDisallowParentInterceptDownEvent(disallowParentInterceptDownEvent);
+    public BannerViewPager<T> disallowParentInterceptDownEvent(boolean disallowParentInterceptDownEvent) {
+        mBannerManager.getBannerOptions().setDisallowParentInterceptDownEvent(disallowParentInterceptDownEvent);
         return this;
     }
 
@@ -1174,8 +1138,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
      *                                       true:滑动出屏幕停止自动轮播，false:滑动出屏幕继续自动轮播。默认值为true
      */
     public BannerViewPager<T> stopLoopWhenDetachedFromWindow(boolean stopLoopWhenDetachedFromWindow) {
-        mBannerManager.getBannerOptions()
-                .setStopLoopWhenDetachedFromWindow(stopLoopWhenDetachedFromWindow);
+        mBannerManager.getBannerOptions().setStopLoopWhenDetachedFromWindow(stopLoopWhenDetachedFromWindow);
         return this;
     }
 
@@ -1184,8 +1147,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
      *                                 true：显示，false：不显示，默认值false
      */
     public BannerViewPager<T> showIndicatorWhenOneItem(boolean showIndicatorWhenOneItem) {
-        mBannerManager.getBannerOptions()
-                .showIndicatorWhenOneItem(showIndicatorWhenOneItem);
+        mBannerManager.getBannerOptions().showIndicatorWhenOneItem(showIndicatorWhenOneItem);
         return this;
     }
 
@@ -1193,8 +1155,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
      * @param autoScrollSmoothly is auto play scroll smoothly.
      */
     public BannerViewPager<T> setAutoPlaySmoothly(boolean autoScrollSmoothly) {
-        mBannerManager.getBannerOptions()
-                .setAutoScrollSmoothly(autoScrollSmoothly);
+        mBannerManager.getBannerOptions().setAutoScrollSmoothly(autoScrollSmoothly);
         return this;
     }
 
@@ -1228,9 +1189,7 @@ public class BannerViewPager<T> extends RelativeLayout implements LifecycleObser
      * @deprecated Use {@link #setRoundCorner(int, int, int, int)} instead.
      */
     @Deprecated
-    public BannerViewPager<T> setRoundRect(@Px int topLeftRadius, @Px int topRightRadius,
-                                           int bottomLeftRadius,
-                                           int bottomRightRadius) {
+    public BannerViewPager<T> setRoundRect(@Px int topLeftRadius, @Px int topRightRadius, int bottomLeftRadius, int bottomRightRadius) {
         return setRoundCorner(topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
     }
 }
